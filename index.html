@@ -5,31 +5,363 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stopwatch App</title>
-    <link rel="stylesheet" href="style.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 15px;
+    font-family: Arial, sans-serif;
+    color: #18254c;
+    background:
+        radial-gradient(circle at 10% 10%, #85aaff, transparent 35%),
+        radial-gradient(circle at 90% 80%, #f0a9ff, transparent 35%),
+        linear-gradient(135deg, #b8c8ff, #e9d9ff, #c4d5ff);
+}
+
+/* Main circular stopwatch */
+.stopwatch {
+    width: min(92vw, 620px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    padding: 65px 55px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(145deg, #ffffffee, #eaf0ffed);
+    border: 3px solid #ffffff;
+    box-shadow:
+        0 0 0 5px #8a9dff55,
+        0 0 25px #65baffaa,
+        0 0 45px #bd70ff66,
+        0 25px 70px #4856b955,
+        inset 0 0 35px #ffffff;
+}
+
+.stopwatch::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        #54d9ff,
+        #7775ff,
+        #ef83ff,
+        #7775ff,
+        #54d9ff
+    );
+    z-index: -1;
+    filter: blur(1px);
+}
+
+h1 {
+    font-size: clamp(22px, 4vw, 34px);
+    letter-spacing: 3px;
+    font-weight: 800;
+    color: #17264b;
+}
+
+.subtitle {
+    margin-top: 8px;
+    font-size: clamp(12px, 2vw, 17px);
+    color: #53649c;
+}
+
+.display {
+    width: 100%;
+    margin: 25px 0;
+    padding: 22px 5px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, #111d3d, #25365f);
+    color: #ffffff;
+    font-family: monospace;
+    font-size: clamp(22px, 4.5vw, 38px);
+    font-weight: bold;
+    letter-spacing: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    border: 2px solid #a6aaff;
+    box-shadow:
+        0 0 12px #7185ff,
+        0 0 25px #a37aff55,
+        inset 0 3px 12px #00000055;
+}
+
+.buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 5px 0 20px;
+}
+
+button {
+    width: clamp(53px, 11vw, 88px);
+    height: clamp(53px, 11vw, 88px);
+    flex-shrink: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: clamp(11px, 1.6vw, 14px);
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow:
+        0 6px 15px #38477830,
+        inset 0 2px 5px #ffffff66;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-5px) scale(1.06);
+    box-shadow:
+        0 10px 22px #38477845,
+        inset 0 2px 5px #ffffff77;
+}
+
+button:active {
+    transform: scale(0.94);
+}
+
+#startBtn {
+    background: linear-gradient(145deg, #25e3b0, #00a987);
+}
+
+#pauseBtn {
+    background: linear-gradient(145deg, #ffe86c, #ffa323);
+}
+
+#resetBtn {
+    background: linear-gradient(145deg, #ff858b, #e82d60);
+}
+
+#lapBtn {
+    background: linear-gradient(145deg, #76baff, #4b42ef);
+}
+
+.laps-section {
+    width: 100%;
+    max-width: 430px;
+    padding: 16px 22px;
+    border-radius: 28px;
+    background: #ffffff80;
+    border: 1px solid #ffffff;
+    box-shadow: inset 0 0 15px #ffffff88;
+    text-align: left;
+}
+
+.laps-section h2 {
+    font-size: clamp(15px, 2.5vw, 21px);
+    margin-bottom: 8px;
+    color: #17264b;
+}
+
+#lapList {
+    list-style: none;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+#lapList li {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 0;
+    border-bottom: 1px solid #cbd5fa;
+    font-family: monospace;
+    font-size: clamp(11px, 1.8vw, 14px);
+    color: #354a86;
+}
+
+#lapList .empty {
+    display: block;
+    font-family: Arial, sans-serif;
+    color: #65729a;
+}
+
+@media (max-width: 520px) {
+    body {
+        padding: 20px 10px;
+    }
+
+    .stopwatch {
+        width: min(96vw, 430px);
+        padding: 45px 28px;
+    }
+
+    h1 {
+        letter-spacing: 2px;
+    }
+
+    .display {
+        margin: 20px 0;
+        padding: 17px 3px;
+    }
+
+    .buttons {
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    button {
+        width: 53px;
+        height: 53px;
+        border-width: 2px;
+        font-size: 10px;
+    }
+
+    .laps-section {
+        padding: 12px 15px;
+        border-radius: 20px;
+    }
+
+    #lapList {
+        max-height: 75px;
+    }
+}
+
+@media (max-width: 360px) {
+    .stopwatch {
+        padding: 38px 22px;
+    }
+
+    .display {
+        font-size: 20px;
+    }
+
+    button {
+        width: 47px;
+        height: 47px;
+        font-size: 9px;
+    }
+}
+</style>
 </head>
+
 <body>
 
-    <div class="stopwatch">
-        <h1>STOPWATCH</h1>
-        <p class="subtitle">Track every second</p>
+<div class="stopwatch">
 
-        <div class="display" id="display">00:00:00.00</div>
+    <h1>STOPWATCH</h1>
+    <p class="subtitle">Track every second</p>
 
-        <div class="buttons">
-            <button id="startBtn">Start</button>
-            <button id="pauseBtn">Pause</button>
-            <button id="resetBtn">Reset</button>
-            <button id="lapBtn">Lap</button>
-        </div>
+    <div class="display" id="display">00:00:00.00</div>
 
-        <div class="laps-section">
-            <h2>Lap Times</h2>
-            <ul id="lapList">
-                <li class="empty">Your lap times will appear here.</li>
-            </ul>
-        </div>
+    <div class="buttons">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+        <button id="lapBtn">Lap</button>
     </div>
 
-    <script src="script.js"></script>
+    <div class="laps-section">
+        <h2>Lap Times</h2>
+        <ul id="lapList">
+            <li class="empty">Your lap times will appear here.</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+const display = document.getElementById("display");
+const startBtn = document.getElementById("startBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const resetBtn = document.getElementById("resetBtn");
+const lapBtn = document.getElementById("lapBtn");
+const lapList = document.getElementById("lapList");
+
+let startTime = 0;
+let elapsedTime = 0;
+let timerId = null;
+let lapCount = 0;
+
+function formatTime(time) {
+    const centiseconds = Math.floor(time / 10) % 100;
+    const totalSeconds = Math.floor(time / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return (
+        String(hours).padStart(2, "0") + ":" +
+        String(minutes).padStart(2, "0") + ":" +
+        String(seconds).padStart(2, "0") + "." +
+        String(centiseconds).padStart(2, "0")
+    );
+}
+
+function updateDisplay() {
+    elapsedTime = Date.now() - startTime;
+    display.textContent = formatTime(elapsedTime);
+}
+
+startBtn.addEventListener("click", function () {
+    if (timerId !== null) return;
+
+    startTime = Date.now() - elapsedTime;
+    timerId = setInterval(updateDisplay, 10);
+});
+
+pauseBtn.addEventListener("click", function () {
+    if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+        updateDisplay();
+    }
+});
+
+resetBtn.addEventListener("click", function () {
+    clearInterval(timerId);
+    timerId = null;
+
+    elapsedTime = 0;
+    startTime = 0;
+    lapCount = 0;
+
+    display.textContent = "00:00:00.00";
+
+    lapList.innerHTML =
+        '<li class="empty">Your lap times will appear here.</li>';
+});
+
+lapBtn.addEventListener("click", function () {
+    if (timerId === null) return;
+
+    if (lapCount === 0) {
+        lapList.innerHTML = "";
+    }
+
+    lapCount++;
+
+    const lapItem = document.createElement("li");
+    const lapLabel = document.createElement("span");
+    const lapTime = document.createElement("span");
+
+    lapLabel.textContent = "Lap " + lapCount;
+    lapTime.textContent = formatTime(elapsedTime);
+
+    lapItem.append(lapLabel, lapTime);
+    lapList.prepend(lapItem);
+});
+</script>
+
 </body>
 </html>
